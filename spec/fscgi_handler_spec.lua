@@ -2,8 +2,6 @@ local cjson_decode = require('cjson').decode
 local cjson_encode = require('cjson').encode
 local _inspect = require "inspect"
 
--- [ { "id": "\/Public\/.test", "cls": "7", "text": ".test", "no_setup": 0, "is_cached": 0, "draggable": 1, "iconCls": "folder", "max_item_limit": 2000, "real_total": 12 }, { "id": "\/Public\/new folder 1", "cls": "7", "text": "new folder 1", "no_setup": 0, "is_cached": 0, "draggable": 1, "iconCls": "folder", "max_item_limit": 2000, "real_total": 12 }]
--- http://192.168.68.74:8080/cgi-bin/filemanager/utilRequest.cgi?sid=7rw3557x&node=/Public&hidden_file=1&func=get_tree
 
 local mock = {
   body = '',
@@ -66,12 +64,12 @@ local ngx =  {
 _G.ngx = ngx
 local transformerHandler = require('kong.plugins.api-transformer.handler')
 
-local req_code_string = "/usr/local/apim/luajit/share/lua/5.1/qserver/kong/plugins/api-transformer/spec/fscgi_req.lua"
-local resp_code_string = "/usr/local/apim/luajit/share/lua/5.1/qserver/kong/plugins/api-transformer/spec/fscgi_resp.lua"
+local req_code_string = "./spec/fscgi_req.lua"
+local resp_code_string = "./spec/fscgi_resp.lua"
 
 
 local config = {
-  http_200_err_handling = true,
+  http_200_always = true,
   request_transformer = req_code_string,
   response_transformer = resp_code_string
 }
@@ -154,16 +152,6 @@ describe("<GET /folders>", function()
   describe("Test body_filter()", function()
 
     before_each(function()
-      -- mock = {
-      --   body = '',
-      --   ngx_headers = { ["content-length"] = 123 },
-      --   uri_args = { a=1 },
-      --   req_headers =  { ["X-QTS-SID"] = "cool_header" },
-      --   resp_headers = { ['Content-Type'] = "application/json; charset=utf-8" },
-      --   router_matches = { group_one = "test_match" },
-      --   ngx_var = {uri = "/abc"},
-      --   ngx_get_method = "GET",
-      -- }
     end)
 
     it("should get errcode 99 when _req_uri did not match", function()

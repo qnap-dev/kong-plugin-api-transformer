@@ -23,7 +23,7 @@ return {
       type = "string",
       required = true,
     },
-    http_200_err_handling = {
+    http_200_always = {
       type = "boolean",
       default = true,
     },    

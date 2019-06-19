@@ -59,7 +59,7 @@ function MyPlugin:header_filter(config)
   if ngx.ctx._parsing_error then
     return
   end
-  if config.http_200_err_handling then
+  if config.http_200_always then
     ngx.status = 200
   end
 end

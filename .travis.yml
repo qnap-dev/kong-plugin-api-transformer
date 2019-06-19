@@ -1,0 +1,31 @@
+language: python
+sudo: false
+
+env:
+  - LUA="lua=5.1"	
+  
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install -y libssl-dev
+  - pip install hererocks
+  - hererocks lua_install -r^ --$LUA
+  - export PATH=$PATH:$PWD/lua_install/bin
+
+install:
+  - make setup
+  - make install
+
+script:
+  - make test
+
+deploy:
+  - provider: script
+    skip_cleanup: true
+    script: luarocks upload kong-plugin-api-transformer-*.rockspec --api-key=$LUAROCKS_API_KEY
+    on:
+      branch: master
+
+notifications:
+  email:
+    on_success: never
+    on_failure: always

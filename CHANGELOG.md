@@ -9,4 +9,4 @@ Examples of how to use this _markdown_ cand be found here [Keep a CHANGELOG](htt
 
 ## [0.1.0](https://github.com/andersenq/kong-plugin-api-transformer.git/tree/v0.1.0) - 201-06-19
 ### Added
-- First version of the api-transformer plugin
+- First version of the api-transformer kong plugin

@@ -1,24 +1,28 @@
-[![Build Status](https://travis-ci.org/stone-payments/kong-plugin-template-transformer.svg?branch=master)](https://travis-ci.org/stone-payments/kong-plugin-template-transformer)
+[![Build Status](https://travis-ci.org/andersenq/kong-plugin-api-transformer.svg?branch=master)](https://travis-ci.org/andersenq/kong-plugin-api-transformer)
 
-# Kong-plugin-template-transformer
+# Kong-plugin-api-transformer
 
-This is a Kong middleware to transform requests / responses, using pre-configured templates.
+This is a Kong middleware to transform requests / responses, using the lua script, inspired by [Kong-plugin-template-transformer](https://github.com/stone-payments/kong-plugin-template-transformer).
 
-## The Problem
+## Abstract
 
-When using Kong, you can create routes that proxy to an upstream. The problem lies when the upstream has an ugly response/request contract. Sometimes the [kong bundled request transformer](https://docs.konghq.com/hub/kong-inc/request-transformer/) is not enough. This plugin was created for those situations, it can apply a [template](https://github.com/bungle/lua-resty-template) to JSON requests and responses, transforming them pretty much however you like.
+Current plugins which listed in the **[Kong Hub - TRANSFORMATIONS](https://docs.konghq.com/hub/#transformations)** exists many restrictions while applying in our business cases, what we need is a more elastic way in transformtion. With this plugin, you can write the control logic in Lua to transform requests and responses for specific routes/servcies, we also engage the Lua sanbox approach for security concerns.
 
 ## Project Structure
 
-The plugin folder should contain at least a `schema.lua` and a `handler.lua`, alongside with a `spec` folder and a `.rockspec` file specifying the current version of the package.
+```
+├── kong
+│   └── plugins
+│       └── api-transformer
+│           ├── handler.lua
+│           ├── schema.lua
+│           └── utils.lua
+└── spec                         
+    ├── fscgi_req.lua            (request transformer script)
+    ├── fscgi_resp.lua           (response transformer script) 
+    └── fscgi_handler_spec.lua   (test case)
+```
 
-# Writing Templates
-
-We use [lua-resty-template](https://github.com/bungle/lua-resty-template) to write templates. It's also **very important** that you don't leave any `\t` in the files. We also only support JSON requests and responses for now.
-
-## Rockspec Format
-
-The `.rockspec` file should follow [LuaRocks' conventions](https://github.com/luarocks/luarocks/wiki/Rockspec-format)
 
 ## Configuration
 
@@ -27,27 +31,33 @@ The `.rockspec` file should follow [LuaRocks' conventions](https://github.com/lu
 Configure this plugin on a Route with:
 
 ```bash
+curl -X POST http://kong:8001/services/{service_id}/plugins \
+    --data "name=api-transformer"  \
+    --data "config.request_transformer=$req_lua"
+    --data "config.response_transformer=$resp_lua"
+    --data "config.http_200_always=true"
+
+
 curl -X POST http://kong:8001/routes/{route_id}/plugins \
-    --data "name=kong-plugin-template-transformer"  \
-    --data "config.request_template=http://new-url.com"
-    --data "config.response_template=http://new-url.com"
-    --data "config.hidden_fields=http://new-url.com"
+    --data "name=api-transformer"  \
+    --data "config.request_transformer=$req_lua"
+    --data "config.response_transformer=$resp_lua"
+    --data "config.http_200_always=true"
 ```
 
-- route_id: the id of the Route that this plugin configuration will target.
-- config.request_template: Optional, the template to be applied before proxying to the upstream.
-- config.response_template: Optional, the template to be applied before returning to the client.
-- config.hidden_fields: Optional, a list of request or response fields that you do not want Kong to save them in a log file.
+- config.request_transformer: the lua script to transform the request context before proxying to the upstream.
+- config.response_transformer: the lua script to transform the response context before returning to the client.
+- config.http_200_always: default: true, use the http 200 approach in error handling, this will ignore the upstream's http code.
 
 ## Developing
 
 ### In docker
 
 ```bash
-docker build . -t kong-plugin-template-transformer-dev
+docker build . -t api-transformer-dev
 docker run -it -v ${PWD}/template-transformer:/template-transformer kong-plugin-template-transformer-dev bash
 ```
 
 ## Credits
 
-made with :heart: by Stone Payments
+QNAP Inc. [www.qnap.com](http://www.qnap.com)
