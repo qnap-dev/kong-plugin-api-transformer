@@ -1,5 +1,5 @@
 package = "kong-plugin-api-transformer"
-version = "0.1.0"
+version = "0.1.0-0"
 source = {
   url = "https://github.com/andersenq/kong-plugin-api-transformer.git",
   tag = "0.1.0"
@@ -15,8 +15,8 @@ dependencies = {
 build = {
   type = "builtin",
   modules = {
-    ["kong.plugins.api-transformer.handler"] = "template-transformer/handler.lua",
-    ["kong.plugins.api-transformer.schema"] = "template-transformer/schema.lua",
-    ["kong.plugins.api-transformer.utils"] = "template-transformer/utils.lua"
+    ["kong.plugins.api-transformer.handler"] = "./kong/plugins/api-transformer/handler.lua",
+    ["kong.plugins.api-transformer.schema"] = "./kong/plugins/api-transformer/schema.lua",
+    ["kong.plugins.api-transformer.utils"] = "./kong/plugins/api-transformer/utils.lua"
   }
 }
