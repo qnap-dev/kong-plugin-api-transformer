@@ -49,7 +49,70 @@ curl -X POST http://kong:8001/routes/{route_id}/plugins \
 - config.response_transformer: the file path of lua script to transform the response context before returning to the client.
 - config.http_200_always: default: true, use the http 200 approach in error handling, this will ignore the upstream's http code.
 
-## Developer Env 
+## For Developer
+
+### allowed Lua objects/functions in the transformer script's context
+```lua
+  print
+  assert
+  error
+  ipairs
+  next
+  pairs
+  pcall
+  select
+  tonumber
+  tostring
+  type
+  unpack
+  xpcall
+  string.byte
+  string.char
+  string.find
+  string.format
+  string.gmatch
+  string.gsub
+  string.len
+  string.match
+  string.rep
+  string.reverse
+  string.sub
+  string.upper
+  table.insert
+  table.maxn
+  table.remove
+  table.sort
+  table.insert
+  table.concate
+```
+
+### available utilitiy functions in the transformer script's context
+```lua
+    function _inspect() => require('inspect')
+    function _cjson_decode_(raw_str) => require('cjson').decode
+    function _cjson_encode_(json_obj) => require('cjson').encode
+    function _url_encode_(str)
+    function _url_decode_(str)
+    function _log_(obj) 
+```
+
+### available OpenResty API in the transformer script's context
+```lua
+    _req_uri => ngx.var.uri
+    _req_headers => ngx.req.get_headers()
+    _req_method => ngx.req.get_method()
+    _req_uri_args => ngx.req.get_uri_args()
+    _req_json_body => _cjson_decode_(ngx.req.read_body())
+    function _req_set_uri_args_ => ngx.req.set_uri_args
+```
+
+### available utilitiy functions in the transformer script's context
+```lua
+  _cjson_decode_ = require('cjson').decode,
+  _cjson_encode_ = require('cjson').encode,
+  _inspect = _inspect,
+  _log_ = function(e) ngx.log(ngx.ERR, _inspect(e)) end,
+```
 
 ### run test manually
 ```bash

@@ -29,8 +29,6 @@ function MyPlugin:access(config)
     _req_uri_args = ngx.req.get_uri_args(),
     _req_json_body = _req_json_body,
     _req_set_uri_args_ = ngx.req.set_uri_args,
-    _url_encode_ = _utils.url_encode,
-    _url_decode_ = _utils.url_decode,
 }
 
   -- save vars into context for later usage
@@ -88,8 +86,6 @@ function MyPlugin:body_filter(config)
       _req_json_body = ngx.ctx._req_json_body,
       _resp_headers = ngx.resp.get_headers(),
       _resp_json_body = _cjson_decode_(raw_body),
-      _url_encode_ = _utils.url_encode,
-      _url_decode_ = _utils.url_decode,
     }
 
     local s, r = _utils.run_untrusted_file(config.response_transformer, _env)
