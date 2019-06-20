@@ -17,9 +17,9 @@ Current plugins which listed in the **[Kong Hub - TRANSFORMATIONS](https://docs.
 │           ├── handler.lua
 │           ├── schema.lua
 │           └── utils.lua
-└── spec                         
+└── spec
     ├── fscgi_req.lua            (request transformer script)
-    ├── fscgi_resp.lua           (response transformer script) 
+    ├── fscgi_resp.lua           (response transformer script)
     └── fscgi_handler_spec.lua   (test case)
 ```
 
@@ -54,8 +54,9 @@ curl -X POST http://kong:8001/routes/{route_id}/plugins \
 ### In docker
 
 ```bash
-docker build . -t api-transformer-dev
-docker run -it -v ${PWD}/template-transformer:/template-transformer kong-plugin-template-transformer-dev bash
+docker build . -t api-transformer-dev-env
+docker run -it -v ${PWD}:/api-transformer qnapandersen/kong-plugin-api-transformer-dev:0.1.0 bash
+busted -o=TAP --lazy /api-transformer/spec/fscgi_handler_spec.lua
 ```
 
 ## Credits

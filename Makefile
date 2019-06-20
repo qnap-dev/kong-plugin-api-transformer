@@ -1,4 +1,4 @@
-DEV_ROCKS = "lua-cjson 2.1.0" "kong 1.0.3" "luacov 0.12.0" "busted 2.0.rc12" "luacov-cobertura 0.2-1" "luacheck 0.20.0" ""--server=http://luarocks.org/dev luaffi scm-1"
+DEV_ROCKS = "lua-cjson 2.1.0" "kong 1.0.3" "luacov 0.12.0" "busted 2.0.rc12" "luacov-cobertura 0.2-1" "luacheck 0.20.0" "--server=http://luarocks.org/dev luaffi scm-1"
 PROJECT_FOLDER = ./kong/plugins/api-transformer
 LUA_PROJECT = kong-plugin-api-transformer
 
@@ -27,13 +27,8 @@ install:
 	luarocks make
 
 test:
-	cd $(PROJECT_FOLDER) && busted spec/ ${ARGS}
-
-coverage:
-	cd $(PROJECT_FOLDER) && busted spec/ -c ${ARGS} && luacov && luacov-cobertura -o cobertura.xml
+	busted --lazy /api-transformer/spec/fscgi_handler_spec.lua
 
 package:
 	luarocks make --pack-binary-rock
 
-lint:
-	cd $(PROJECT_FOLDER) && luacheck -q .

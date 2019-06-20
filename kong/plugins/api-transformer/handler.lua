@@ -12,7 +12,6 @@ end
 
 
 function MyPlugin:access(config)
-
   MyPlugin.super.access(self)
   
   ngx.req.read_body()

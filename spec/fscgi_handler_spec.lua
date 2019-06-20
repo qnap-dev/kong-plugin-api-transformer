@@ -41,6 +41,7 @@ local ngx =  {
   },
   header = mock.ngx_headers,
   config = {
+    subsystem = "http",
     prefix = spy.new(function()
         return "mock"
     end)
@@ -64,8 +65,8 @@ local ngx =  {
 _G.ngx = ngx
 local transformerHandler = require('kong.plugins.api-transformer.handler')
 
-local req_code_string = "./spec/fscgi_req.lua"
-local resp_code_string = "./spec/fscgi_resp.lua"
+local req_code_string = "/api-transformer/spec/fscgi_req.lua"
+local resp_code_string = "/api-transformer/spec/fscgi_resp.lua"
 
 
 local config = {
