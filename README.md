@@ -1,8 +1,8 @@
-[![Build Status](https://travis-ci.org/andersenq/kong-plugin-api-transformer.svg?branch=master)](https://travis-ci.org/andersenq/kong-plugin-api-transformer)
+[![Build Status](https://travis-ci.org/qnap-dev/kong-plugin-api-transformer.svg?branch=master)](https://travis-ci.org/qnap-dev/kong-plugin-api-transformer)
 
 # Kong-plugin-api-transformer
 
-This is a Kong middleware to transform requests / responses, using the lua script, inspired by [Kong-plugin-template-transformer](https://github.com/stone-payments/kong-plugin-template-transformer).
+This is a Kong middleware to transform requests / responses by using Lua scripts, inspired by [Kong-plugin-template-transformer](https://github.com/stone-payments/kong-plugin-template-transformer).
 
 ## Abstract
 
@@ -51,7 +51,7 @@ curl -X POST http://kong:8001/routes/{route_id}/plugins \
 
 ## For Developer
 
-### Allowed Lua objects/functions in the transformer script's context
+### Allowed Lua objects/functions in the transformer script's sandbox
 ```lua
   print
   assert
@@ -86,28 +86,28 @@ curl -X POST http://kong:8001/routes/{route_id}/plugins \
   table.concate
 ```
 
-### Available utils in the transformer script's context
+### Available utils in the transformer script's sandbox
 | Sanbox         | Coreresponding                | Lua type |
 |----------------|-------------------------------|----------|
-| _inspect_      | require('inspect')            | function |
-| _cjson_decode_ | require('cjson').decode       | function |
-| _cjson_encode_ | require('cjson').encode       | function |
-| _url_encode_   |                               | function |
-| _url_decode_   |                               | function |
-| _log_          | ngx.log(ngx.ERR, _inspect(e)) | function |
+| `_inspect_`      | `require('inspect')`            | function |
+| `_cjson_decode_` | `require('cjson').decode`       | function |
+| `_cjson_encode_` | `require('cjson').encode`      | function |
+| `_url_encode_`   |                               | function |
+| `_url_decode_`   |                               | function |
+| `_log_`          | `ngx.log(ngx.ERR, _inspect(e))` | function |
 
-### Available OpenResty API in the transformer script's context
+### Available OpenResty API in the transformer script's sandbox
 | Sandbox            | Corresponding                       | Lua type |
 |--------------------|-------------------------------------|----------|
-| _req_uri           | ngx.var.uri                         | string   |
-| _req_headers       | ngx.req.get_headers()               | table    |
-| _req_method        | ngx.req.get_method()                | string   |
-| _req_uri_args      | ngx.req.get_uri_args()              | table    |
-| _req_json_body     | _cjson_decode_(ngx.req.read_body()) | table    |
-| _req_set_uri_args_ | ngx.req.set_uri_args                | function |
+| `_req_uri`           | `ngx.var.uri`                         | string   |
+| `_req_headers`       | `ngx.req.get_headers()`               | table    |
+| `_req_method`        | `ngx.req.get_method()`               | string   |
+| `_req_uri_args`      | `ngx.req.get_uri_args()`              | table    |
+| `_req_json_body`     | `_cjson_decode_(ngx.req.read_body())` | table    |
+| `_req_set_uri_args_` | `ngx.req.set_uri_args`                | function |
 
 
-### run test manually
+### Run test manually
 ```bash
 docker run -it -v ${PWD}:/api-transformer qnapandersen/kong-plugin-api-transformer-dev:0.1.0 bash
 cd /api-transformer
