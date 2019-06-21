@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/andersenq/kong-plugin-api-transformer.svg?branch=master)](https://travis-ci.org/andersenq/kong-plugin-api-transformer)
+[![Build Status](https://travis-ci.org/qnap-dev/kong-plugin-api-transformer.svg?branch=master)](https://travis-ci.org/qnap-dev/kong-plugin-api-transformer)
 
 # Kong-plugin-api-transformer
 
