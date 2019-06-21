@@ -107,7 +107,7 @@ curl -X POST http://kong:8001/routes/{route_id}/plugins \
 | `_req_set_uri_args_` | `ngx.req.set_uri_args`                | function |
 
 
-### run test manually
+### Run test manually
 ```bash
 docker run -it -v ${PWD}:/api-transformer qnapandersen/kong-plugin-api-transformer-dev:0.1.0 bash
 cd /api-transformer
