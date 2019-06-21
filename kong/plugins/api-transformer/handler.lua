@@ -1,6 +1,6 @@
 local BasePlugin = require 'kong.plugins.base_plugin'
 local MyPlugin = BasePlugin:extend()
-local _inspect = require("inspect")
+local _inspect_ = require("inspect")
 local _utils = require "kong.plugins.api-transformer.utils"
 local _cjson_decode_ = require("cjson").decode
 local _cjson_encode_ = require("cjson").encode

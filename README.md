@@ -51,7 +51,7 @@ curl -X POST http://kong:8001/routes/{route_id}/plugins \
 
 ## For Developer
 
-### allowed Lua objects/functions in the transformer script's context
+### Allowed Lua objects/functions in the transformer script's context
 ```lua
   print
   assert
@@ -86,33 +86,26 @@ curl -X POST http://kong:8001/routes/{route_id}/plugins \
   table.concate
 ```
 
-### available utilitiy functions in the transformer script's context
-```lua
-    function _inspect() => require('inspect')
-    function _cjson_decode_(raw_str) => require('cjson').decode
-    function _cjson_encode_(json_obj) => require('cjson').encode
-    function _url_encode_(str)
-    function _url_decode_(str)
-    function _log_(obj) 
-```
+### Available utils in the transformer script's context
+| Sanbox         | Coreresponding                | Lua type |
+|----------------|-------------------------------|----------|
+| _inspect_      | require('inspect')            | function |
+| _cjson_decode_ | require('cjson').decode       | function |
+| _cjson_encode_ | require('cjson').encode       | function |
+| _url_encode_   |                               | function |
+| _url_decode_   |                               | function |
+| _log_          | ngx.log(ngx.ERR, _inspect(e)) | function |
 
-### available OpenResty API in the transformer script's context
-```lua
-    _req_uri => ngx.var.uri
-    _req_headers => ngx.req.get_headers()
-    _req_method => ngx.req.get_method()
-    _req_uri_args => ngx.req.get_uri_args()
-    _req_json_body => _cjson_decode_(ngx.req.read_body())
-    function _req_set_uri_args_ => ngx.req.set_uri_args
-```
+### Available OpenResty API in the transformer script's context
+| Sandbox            | Corresponding                       | Lua type |
+|--------------------|-------------------------------------|----------|
+| _req_uri           | ngx.var.uri                         | string   |
+| _req_headers       | ngx.req.get_headers()               | table    |
+| _req_method        | ngx.req.get_method()                | string   |
+| _req_uri_args      | ngx.req.get_uri_args()              | table    |
+| _req_json_body     | _cjson_decode_(ngx.req.read_body()) | table    |
+| _req_set_uri_args_ | ngx.req.set_uri_args                | function |
 
-### available utilitiy functions in the transformer script's context
-```lua
-  _cjson_decode_ = require('cjson').decode,
-  _cjson_encode_ = require('cjson').encode,
-  _inspect = _inspect,
-  _log_ = function(e) ngx.log(ngx.ERR, _inspect(e)) end,
-```
 
 ### run test manually
 ```bash

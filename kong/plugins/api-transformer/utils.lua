@@ -1,4 +1,4 @@
-local _inspect = require "inspect"
+local _inspect_ = require "inspect"
 
 local _M = {}
 
@@ -52,12 +52,12 @@ local _G_ENV = {
     concate = table.concate,
   },
 
-  _inspect = _inspect,
+  _inspect_ = _inspect_,
   _cjson_decode_ = require('cjson').decode,
   _cjson_encode_ = require('cjson').encode,
   _url_encode_ = _M.url_encode,
   _url_decode_ = _M.url_decode,
-  _log_ = function(e) ngx.log(ngx.ERR, _inspect(e)) end,  
+  _log_ = function(e) ngx.log(ngx.ERR, _inspect_(e)) end,  
 }
 
 

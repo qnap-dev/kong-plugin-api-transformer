@@ -1,6 +1,6 @@
 local cjson_decode = require('cjson').decode
 local cjson_encode = require('cjson').encode
-local _inspect = require "inspect"
+local _inspect_ = require "inspect"
 
 
 local mock = {
@@ -32,7 +32,7 @@ local ngx =  {
     get_body_data =  spy.new(function() return mock.body end),
     set_uri_args = spy.new(function(a) 
       mock.uri_args = a 
-      -- print("called!!!", _inspect(a))
+      -- print("called!!!", _inspect_(a))
     end),
     get_uri_args = spy.new(function() return mock.uri_args end),
     set_header = spy.new(function(h) mock.req_headers = h end),
