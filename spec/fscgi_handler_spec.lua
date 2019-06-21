@@ -16,7 +16,9 @@ local mock = {
 
 local kong = {
   response = {
-    exit = function(code, message) print("kong.exit():",code,message) end,
+    exit = function(code, message)
+      -- print("kong.exit():",code,message) 
+    end,
   }
 }
 _G.kong = kong
@@ -32,7 +34,6 @@ local ngx =  {
     get_body_data =  spy.new(function() return mock.body end),
     set_uri_args = spy.new(function(a) 
       mock.uri_args = a 
-      -- print("called!!!", _inspect_(a))
     end),
     get_uri_args = spy.new(function() return mock.uri_args end),
     set_header = spy.new(function(h) mock.req_headers = h end),
@@ -161,13 +162,13 @@ describe("<GET /folders>", function()
     before_each(function()
     end)
 
-    it("should get errcode 99 when _req_uri did not match", function()
-      ngx.ctx._req_uri = "xxx/folders1"
-      ngx.ctx._method = "GET"
+    it("should get errcode 500 when _req_uri did not match #t01 ", function()
+      ngx.ctx.req_uri = "xxx/folders1"
+      ngx.ctx.req_method = "GET"
     
       local new_rsp = {
         data = {},
-        error = {code=99, message="Unknown operation"}
+        error = {code=500, message="invalid request uri: " .. ngx.ctx.req_uri}
       }
 
       transformerHandler:new()
@@ -178,8 +179,8 @@ describe("<GET /folders>", function()
     end)
 
     it("response body shall same after transformer", function()
-      ngx.ctx._req_uri = "xxx/folders"
-      ngx.ctx._method = "GET"
+      ngx.ctx.req_uri = "xxx/folders"
+      ngx.ctx.req_method = "GET"
 
       local new_rsp = {
         data = {
@@ -261,8 +262,8 @@ describe("<POST /folders>", function()
     end)
 
     it("Test response transformer when code=33", function()
-      ngx.ctx._req_uri = "xxx/folders"
-      ngx.ctx._method = "POST"
+      ngx.ctx.req_uri = "xxx/folders"
+      ngx.ctx.req_method = "POST"
 
       local new_rsp = {["data"]={},["error"]={["message"]="Name duplication",["code"]=33}}
 
@@ -277,14 +278,14 @@ describe("<POST /folders>", function()
     end)
 
     it("Test response transformer when code=0, with predefined req_body", function()
-      ngx.ctx._req_uri = "xxx/folders"
-      ngx.ctx._method = "POST"
+      ngx.ctx.req_uri = "xxx/folders"
+      ngx.ctx.req_method = "POST"
 
       local new_rsp = {["data"]={["id"]="%2FPublic%2Fa04"},["error"]={["message"]="success",["code"]=1}}
 
       transformerHandler:new()
       ngx.arg[2] = true -- set eof == true
-      ngx.ctx._req_json_body = {name="a04", parent="/Public"}
+      ngx.ctx.req_json_body = {name="a04", parent="/Public"}
       ngx.ctx.resp_buffer = [[
         { "version": "5.1.0", "build": "20190424", "status": 1, "success": "true" }
       ]]

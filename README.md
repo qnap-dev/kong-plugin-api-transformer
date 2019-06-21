@@ -6,7 +6,7 @@ This is a Kong middleware to transform requests / responses by using Lua scripts
 
 ## Abstract
 
-Current plugins which listed in the **[Kong Hub - TRANSFORMATIONS](https://docs.konghq.com/hub/#transformations)** exists many restrictions while applying in our business cases, what we need is a more elastic way in transformtion. With this plugin, you can write the control logic in Lua to transform requests and responses for specific routes/servcies, we also engage the Lua sanbox approach for security concerns.
+Current transformer plugins that listed in the **[Kong Hub](https://docs.konghq.com/hub/#transformations)** exists many restrictions in our business requirements, what we need is a more elastic way in transformtion. With this plugin, you can write the control logic in Lua to transform requests and responses for specific routes/servcies, we also engage the Lua sanbox approach for security concerns.
 
 ## Project Structure
 
@@ -18,9 +18,9 @@ Current plugins which listed in the **[Kong Hub - TRANSFORMATIONS](https://docs.
 │           ├── schema.lua
 │           └── utils.lua
 └── spec
-    ├── fscgi_req.lua            (request transformer script)
-    ├── fscgi_resp.lua           (response transformer script)
-    └── fscgi_handler_spec.lua   (test case)
+    ├── fscgi_req.lua            (mock request transformer script)
+    ├── fscgi_resp.lua           (mock response transformer script)
+    └── fscgi_handler_spec.lua   (fscgi test case)
 ```
 
 
@@ -86,25 +86,37 @@ curl -X POST http://kong:8001/routes/{route_id}/plugins \
   table.concate
 ```
 
-### Available utils in the transformer script's sandbox
-| Sanbox         | Coreresponding                | Lua type |
-|----------------|-------------------------------|----------|
+### Available API in the transformer script's sandbox
+| Sanbox           | Coreresponding                  | Lua type |
+|------------------|---------------------------------|----------|
 | `_inspect_`      | `require('inspect')`            | function |
 | `_cjson_decode_` | `require('cjson').decode`       | function |
-| `_cjson_encode_` | `require('cjson').encode`      | function |
-| `_url_encode_`   |                               | function |
-| `_url_decode_`   |                               | function |
+| `_cjson_encode_` | `require('cjson').encode`       | function |
+| `_url_encode_`   |                                 | function |
+| `_url_decode_`   |                                 | function |
 | `_log_`          | `ngx.log(ngx.ERR, _inspect(e))` | function |
 
-### Available OpenResty API in the transformer script's sandbox
-| Sandbox            | Corresponding                       | Lua type |
-|--------------------|-------------------------------------|----------|
+
+### Available API in the request transformer's sandbox
+| Sandbox              | Corresponding                         | Lua type |
+|----------------------|---------------------------------------|----------|
 | `_req_uri`           | `ngx.var.uri`                         | string   |
-| `_req_headers`       | `ngx.req.get_headers()`               | table    |
-| `_req_method`        | `ngx.req.get_method()`               | string   |
-| `_req_uri_args`      | `ngx.req.get_uri_args()`              | table    |
-| `_req_json_body`     | `_cjson_decode_(ngx.req.read_body())` | table    |
+| `_req_method`        | `ngx.req.get_method()`                | string   |
+| `_req_get_headers_`  | `ngx.req.get_headers`                 | function |
+| `_req_set_header_`   | `ngx.req.set_header`                  | function |
+| `_req_get_uri_args_` | `ngx.req.get_uri_args`                | function |
 | `_req_set_uri_args_` | `ngx.req.set_uri_args`                | function |
+| `_req_json_body`     | `_cjson_decode_(ngx.req.read_body())` | table    |
+
+
+### Available API in the response transformer's sandbox
+| Sandbox              | Corresponding                  | Lua type |
+|----------------------|--------------------------------|----------|
+| `_req_uri`           | `ngx.ctx.req_uri`              | string   |
+| `_req_method`        | `ngx.req.get_method()`         | string   |
+| `_req_json_body`     | `ngx.ctx.req_json_body`        | table    |
+| `_resp_json_body`    | `ngx.ctx.resp_buffer`          | table    |
+| `_resp_get_headers_` | `ngx.resp.get_headers`         | function |
 
 
 ### Run test manually

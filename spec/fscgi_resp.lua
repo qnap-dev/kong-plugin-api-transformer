@@ -19,14 +19,17 @@ function gen_error_obj(status)
   return {code=code, message=message}
 end
 
+
 local new_resp_body = {
   data = {},
   error = {code=99, message="Unknown operation"}
 }
 
+
 if _req_uri == string.match(_req_uri, ".-/folders") then
 
   if _req_method == "GET" then
+
     new_resp_body.data = _resp_json_body
     for _, obj in pairs(_resp_json_body) do
       if not obj.id then
@@ -61,6 +64,11 @@ if _req_uri == string.match(_req_uri, ".-/folders") then
   -- gen error obj finally
   new_resp_body.error = gen_error_obj(_resp_json_body.status)
 
+  return true, _cjson_encode_(new_resp_body)
+
+else
+
+  return false, "invalid request uri: " .. _req_uri
+
 end
 
-return _cjson_encode_(new_resp_body)
