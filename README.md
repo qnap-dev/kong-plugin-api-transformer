@@ -111,7 +111,7 @@ ngx.resp.get_headers
 | `_log_`          | `ngx.log(ngx.ERR, _inspect(e))` | function |
 
 
-### Symbols which cached in ngx.ctx for body_filter()
+### Symbols which cached in ngx.ctx for the response transformer
 This table `ngx.ctx` can be used to store per-request Lua context data and has a life time identical to the current request, so we use this table to store the necessary data for body_filter()
 
 | Cached Symbols           | Coreresponding                             | Lua type |
@@ -120,6 +120,18 @@ This table `ngx.ctx` can be used to store per-request Lua context data and has a
 | `ngx.ctx.req_method`     | `ngx.req.get_method()`                     | string   |
 | `ngx.ctx.req_json_body`  | `_cjson_decode_(ngx.req.get_body_data())`  | table    |
 | `ngx.ctx.resp_json_body` | `ngx.arg[1]`                               | talbe    |
+
+
+### Return values
+
+In the transformer, we need to return a Lua tuple:  (f_status: `boolean`, body_or_err: `string`)
+```
+if f_status == true then
+  body_or_err = transformed_body
+else
+  body_or_err = error message
+end
+```
 
 
 ### Run test manually
