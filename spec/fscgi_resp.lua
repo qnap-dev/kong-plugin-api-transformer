@@ -20,20 +20,24 @@ function gen_error_obj(status)
 end
 
 
-local new_resp_body = {
+local return_body = {
   data = {},
   error = {code=99, message="Unknown operation"}
 }
 
+local _req_uri = ngx.ctx.req_uri
+local _req_method = ngx.ctx.req_method
+local _req_json_body = ngx.ctx.req_json_body
+local _resp_json_body = ngx.ctx.resp_json_body
 
 if _req_uri == string.match(_req_uri, ".-/folders") then
 
   if _req_method == "GET" then
 
-    new_resp_body.data = _resp_json_body
+    return_body.data = _resp_json_body
     for _, obj in pairs(_resp_json_body) do
       if not obj.id then
-        new_resp_body.data = {}
+        return_body.data = {}
         break
       end
       obj["no_setup"] = nil
@@ -55,16 +59,16 @@ if _req_uri == string.match(_req_uri, ".-/folders") then
 
   elseif _req_method == "POST" then
     if _resp_json_body.status == 1 then
-      new_resp_body.data = {
+      return_body.data = {
         id = _url_encode_(_req_json_body.parent .. "/" .. _req_json_body.name)
       }
     end
 
   end
   -- gen error obj finally
-  new_resp_body.error = gen_error_obj(_resp_json_body.status)
+  return_body.error = gen_error_obj(_resp_json_body.status)
 
-  return true, _cjson_encode_(new_resp_body)
+  return true, _cjson_encode_(return_body)
 
 else
 

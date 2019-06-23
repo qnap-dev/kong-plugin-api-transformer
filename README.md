@@ -51,7 +51,7 @@ curl -X POST http://kong:8001/routes/{route_id}/plugins \
 
 ## For Developer
 
-### Allowed Lua objects/functions in the transformer script's sandbox
+### Allowed Lua symbols in the transformer
 ```lua
   print
   assert
@@ -86,8 +86,22 @@ curl -X POST http://kong:8001/routes/{route_id}/plugins \
   table.concate
 ```
 
-### Available API in the transformer script's sandbox
-| Sanbox           | Coreresponding                  | Lua type |
+### Available OpenResty symbols in the transformer
+```
+ngx.ctx
+ngx.var
+ngx.req.get_headers
+ngx.req.set_header
+ngx.req.get_method
+ngx.req.get_body_data
+ngx.req.set_body_data
+ngx.req.get_uri_args
+ngx.req.set_uri_args
+ngx.resp.get_headers
+```
+
+### Available util functions in the transformer
+| In Transformer   | Coreresponding                  | Lua type |
 |------------------|---------------------------------|----------|
 | `_inspect_`      | `require('inspect')`            | function |
 | `_cjson_decode_` | `require('cjson').decode`       | function |
@@ -97,26 +111,15 @@ curl -X POST http://kong:8001/routes/{route_id}/plugins \
 | `_log_`          | `ngx.log(ngx.ERR, _inspect(e))` | function |
 
 
-### Available API in the request transformer's sandbox
-| Sandbox              | Corresponding                         | Lua type |
-|----------------------|---------------------------------------|----------|
-| `_req_uri`           | `ngx.var.uri`                         | string   |
-| `_req_method`        | `ngx.req.get_method()`                | string   |
-| `_req_get_headers_`  | `ngx.req.get_headers`                 | function |
-| `_req_set_header_`   | `ngx.req.set_header`                  | function |
-| `_req_get_uri_args_` | `ngx.req.get_uri_args`                | function |
-| `_req_set_uri_args_` | `ngx.req.set_uri_args`                | function |
-| `_req_json_body`     | `_cjson_decode_(ngx.req.read_body())` | table    |
+### Symbols which cached in ngx.ctx for body_filter()
+This table `ngx.ctx` can be used to store per-request Lua context data and has a life time identical to the current request, so we use this table to store the necessary data for body_filter()
 
-
-### Available API in the response transformer's sandbox
-| Sandbox              | Corresponding                  | Lua type |
-|----------------------|--------------------------------|----------|
-| `_req_uri`           | `ngx.ctx.req_uri`              | string   |
-| `_req_method`        | `ngx.req.get_method()`         | string   |
-| `_req_json_body`     | `ngx.ctx.req_json_body`        | table    |
-| `_resp_json_body`    | `ngx.ctx.resp_buffer`          | table    |
-| `_resp_get_headers_` | `ngx.resp.get_headers`         | function |
+| Cached Symbols           | Coreresponding                             | Lua type |
+|--------------------------|--------------------------------------------|----------|
+| `ngx.ctx.req_uri`        | `ngx.var.uri`                              | string   |
+| `ngx.ctx.req_method`     | `ngx.req.get_method()`                     | string   |
+| `ngx.ctx.req_json_body`  | `_cjson_decode_(ngx.req.get_body_data())`  | table    |
+| `ngx.ctx.resp_json_body` | `ngx.arg[1]`                               | talbe    |
 
 
 ### Run test manually
