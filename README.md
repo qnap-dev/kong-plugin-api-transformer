@@ -6,7 +6,7 @@ This is a Kong middleware to transform requests / responses by using Lua scripts
 
 ## Abstract
 
-Current plugins which listed in the **[Kong Hub - TRANSFORMATIONS](https://docs.konghq.com/hub/#transformations)** exists many restrictions while applying in our business cases, what we need is a more elastic way in transformtion. With this plugin, you can write the control logic in Lua to transform requests and responses for specific routes/servcies, we also engage the Lua sanbox approach for security concerns.
+Current transformer plugins that listed in the **[Kong Hub](https://docs.konghq.com/hub/#transformations)** exists many restrictions in our business requirements, what we need is a more elastic way in transformtion. With this plugin, you can write the control logic in Lua to transform requests and responses for specific routes/servcies, we also engage the Lua sanbox approach for security concerns.
 
 ## Project Structure
 
@@ -18,9 +18,9 @@ Current plugins which listed in the **[Kong Hub - TRANSFORMATIONS](https://docs.
 │           ├── schema.lua
 │           └── utils.lua
 └── spec
-    ├── fscgi_req.lua            (request transformer script)
-    ├── fscgi_resp.lua           (response transformer script)
-    └── fscgi_handler_spec.lua   (test case)
+    ├── fscgi_req.lua            (mock request transformer script)
+    ├── fscgi_resp.lua           (mock response transformer script)
+    └── fscgi_handler_spec.lua   (fscgi test case)
 ```
 
 
@@ -51,7 +51,7 @@ curl -X POST http://kong:8001/routes/{route_id}/plugins \
 
 ## For Developer
 
-### Allowed Lua objects/functions in the transformer script's sandbox
+### Allowed Lua symbols in the transformer
 ```lua
   print
   assert
@@ -86,25 +86,52 @@ curl -X POST http://kong:8001/routes/{route_id}/plugins \
   table.concate
 ```
 
-### Available utils in the transformer script's sandbox
-| Sanbox         | Coreresponding                | Lua type |
-|----------------|-------------------------------|----------|
+### Available OpenResty symbols in the transformer
+```
+ngx.ctx
+ngx.var
+ngx.req.get_headers
+ngx.req.set_header
+ngx.req.get_method
+ngx.req.get_body_data
+ngx.req.set_body_data
+ngx.req.get_uri_args
+ngx.req.set_uri_args
+ngx.resp.get_headers
+```
+
+### Available util functions in the transformer
+| In Transformer   | Coreresponding                  | Lua type |
+|------------------|---------------------------------|----------|
 | `_inspect_`      | `require('inspect')`            | function |
 | `_cjson_decode_` | `require('cjson').decode`       | function |
-| `_cjson_encode_` | `require('cjson').encode`      | function |
-| `_url_encode_`   |                               | function |
-| `_url_decode_`   |                               | function |
+| `_cjson_encode_` | `require('cjson').encode`       | function |
+| `_url_encode_`   |                                 | function |
+| `_url_decode_`   |                                 | function |
 | `_log_`          | `ngx.log(ngx.ERR, _inspect(e))` | function |
 
-### Available OpenResty API in the transformer script's sandbox
-| Sandbox            | Corresponding                       | Lua type |
-|--------------------|-------------------------------------|----------|
-| `_req_uri`           | `ngx.var.uri`                         | string   |
-| `_req_headers`       | `ngx.req.get_headers()`               | table    |
-| `_req_method`        | `ngx.req.get_method()`               | string   |
-| `_req_uri_args`      | `ngx.req.get_uri_args()`              | table    |
-| `_req_json_body`     | `_cjson_decode_(ngx.req.read_body())` | table    |
-| `_req_set_uri_args_` | `ngx.req.set_uri_args`                | function |
+
+### Symbols which cached in ngx.ctx for the response transformer
+This table `ngx.ctx` can be used to store per-request Lua context data and has a life time identical to the current request, so we use this table to store the necessary data for body_filter()
+
+| Cached Symbols           | Coreresponding                             | Lua type |
+|--------------------------|--------------------------------------------|----------|
+| `ngx.ctx.req_uri`        | `ngx.var.uri`                              | string   |
+| `ngx.ctx.req_method`     | `ngx.req.get_method()`                     | string   |
+| `ngx.ctx.req_json_body`  | `_cjson_decode_(ngx.req.get_body_data())`  | table    |
+| `ngx.ctx.resp_json_body` | `ngx.arg[1]`                               | talbe    |
+
+
+### Return values
+
+In the transformer, we need to return a Lua tuple:  (f_status: `boolean`, body_or_err: `string`)
+```
+if f_status == true then
+  body_or_err = transformed_body
+else
+  body_or_err = error message
+end
+```
 
 
 ### Run test manually

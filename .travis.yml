@@ -21,7 +21,7 @@ script:
 deploy:
   - provider: script
     skip_cleanup: true
-    script: luarocks upload kong-plugin-api-transformer-*.rockspec --api-key=$LUAROCKS_API_KEY
+    script: luarocks upload kong-plugin-api-transformer-scm-0.rockspec --api-key=$LUAROCKS_API_KEY --force
     on:
       branch: master
 
