@@ -6,29 +6,31 @@ local _cjson_decode_ = require("cjson").decode
 local _cjson_encode_ = require("cjson").encode
 
 
-function MyPlugin:new()
-  MyPlugin.super.new(self, 'api-transformer')
+local _get_env_ = function()
+  return {
+    ngx = {
+      ctx = ngx.ctx,
+      var = ngx.var,
+      req = {
+        get_headers =  ngx.req.get_headers,
+        set_header = ngx.req.set_header,
+        get_method = ngx.req.get_method,
+        get_body_data = ngx.req.get_body_data,
+        set_body_data = ngx.req.set_body_data,
+        get_uri_args = ngx.req.get_uri_args,
+        set_uri_args = ngx.req.set_uri_args,
+      },
+      resp = {
+        get_headers = ngx.resp.get_headers,
+      }
+    }
+  }
 end
 
 
-local _env = {
-  ngx = {
-    ctx = ngx.ctx,
-    var = ngx.var,
-    req = {
-      get_headers =  ngx.req.get_headers,
-      set_header = ngx.req.set_header,
-      get_method = ngx.req.get_method,
-      get_body_data = ngx.req.get_body_data,
-      set_body_data = ngx.req.set_body_data,
-      get_uri_args = ngx.req.get_uri_args,
-      set_uri_args = ngx.req.set_uri_args,
-    },
-    resp = {
-      get_headers = ngx.resp.get_headers,
-    }
-  }
-}
+function MyPlugin:new()
+  MyPlugin.super.new(self, 'api-transformer')
+end
 
 
 function MyPlugin:access(config)
@@ -49,7 +51,7 @@ function MyPlugin:access(config)
   ngx.ctx.req_method = ngx.req.get_method()
   ngx.ctx.req_json_body = _req_json_body
 
-  local p_status, f_status, req_body_or_err  = _utils.run_untrusted_file(config.request_transformer, _env)
+  local p_status, f_status, req_body_or_err  = _utils.run_untrusted_file(config.request_transformer, _get_env_())
 
   if not p_status then
     ngx.ctx._parsing_error = true
@@ -108,7 +110,7 @@ function MyPlugin:body_filter(config)
     ngx.ctx.resp_json_body = _cjson_decode_(raw_body)
 
 
-    local p_status, f_status, resp_body_or_err = _utils.run_untrusted_file(config.response_transformer, _env)
+    local p_status, f_status, resp_body_or_err = _utils.run_untrusted_file(config.response_transformer, _get_env_())
 
     local resp_body = {
       data = {},
