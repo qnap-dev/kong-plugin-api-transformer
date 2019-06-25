@@ -15,6 +15,7 @@ RUN apt-get install -y \
 ADD Makefile .
 RUN make setup
 
-ADD kong-plugin-api-transformer-*.rockspec .
+ADD kong-plugin-api-transformer-scm-0.rockspec .
+ADD kong-plugin-api-transformer-0.1.0-0.rockspec .
 
 ENV LUA_PATH="/api-transformer/?.lua;;"
