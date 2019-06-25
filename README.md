@@ -122,9 +122,8 @@ This table `ngx.ctx` can be used to store per-request Lua context data and has a
 | `ngx.ctx.resp_json_body` | `ngx.arg[1]`                               | talbe    |
 
 
-### Return values
-
-In the transformer, we need to return a Lua tuple:  (f_status: `boolean`, body_or_err: `string`)
+### Convension in writing the transformer
+In the transformer, we need to return a Lua tuple: `(f_status, body_or_err)`, please check the detail via [test case](https://github.com/qnap-dev/kong-plugin-api-transformer/tree/master/spechttps://github.com/qnap-dev/kong-plugin-api-transformer/tree/master/spec).
 ```
 if f_status == true then
   body_or_err = transformed_body
@@ -141,6 +140,6 @@ cd /api-transformer
 make test
 ```
 
-## Credits
 
+## Credits
 QNAP Inc. [www.qnap.com](http://www.qnap.com)
