@@ -1,3 +1,24 @@
+local _M = {
+  _VERSION = '0.09'
+}
+local mt = { __index = _M }
+
+function _M.new(size)
+  return setmetatable({}, mt)
+end
+
+function _M.get(self, key)
+  return nil
+end
+
+function _M.set(self, key, value, ttl)
+end
+
+function _M.flush_all(self)
+end
+
+package.loaded["resty.lrucache"] = _M
+
 local cjson_decode = require('cjson').decode
 local cjson_encode = require('cjson').encode
 local _inspect_ = require "inspect"
@@ -15,6 +36,9 @@ local mock = {
 }
 
 local kong = {
+  router = {
+    get_route = function() return {id="abc"} end
+  },
   response = {
     exit = function(code, message)
       -- print("kong.exit():",code,message)
@@ -116,7 +140,7 @@ describe("<GET /folders>", function()
       assert.spy(ngx.req.set_uri_args).was_not_called()
     end)
 
-    it("set_uri_args(parent = /)", function()
+    it("set_uri_args(parent = /) #ttt", function()
       mock.uri_args = {
         parent = "/",
         ["show-hidden"] = "true"
