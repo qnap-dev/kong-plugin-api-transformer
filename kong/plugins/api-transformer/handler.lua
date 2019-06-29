@@ -58,8 +58,6 @@ function MyPlugin:access(config)
   ngx.ctx.req_method = ngx.req.get_method()
   ngx.ctx.req_json_body = _req_json_body
 
-  ngx.log(ngx.ERR, "got config", _inspect_(config))
-
   if config.dev_mode then
     C1:flush_all()
   end
@@ -67,8 +65,6 @@ function MyPlugin:access(config)
   local current_route_id = kong.router.get_route().id
   local c1_key = current_route_id .. "access"
   local sandbox_f = C1:get(c1_key)
-
-  ngx.log(ngx.ERR, "got sandbox_f", _inspect_(sandbox_f))
 
   if not sandbox_f  then
     local l_status
