@@ -36,18 +36,20 @@ curl -X POST http://kong:8001/services/{service_id}/plugins \
     --data "config.request_transformer=$req_lua"
     --data "config.response_transformer=$resp_lua"
     --data "config.http_200_always=true"
+    --data "config.dev_mode=true"
 
 
 curl -X POST http://kong:8001/routes/{route_id}/plugins \
     --data "name=api-transformer"  \
     --data "config.request_transformer=$req_lua"
     --data "config.response_transformer=$resp_lua"
-    --data "config.http_200_always=true"
+    --data "config.dev_mode=true"
 ```
 
 - config.request_transformer: the file path of lua script to transform the request context before proxying to the upstream.
 - config.response_transformer: the file path of lua script to transform the response context before returning to the client.
 - config.http_200_always: default: true, use the http 200 approach in error handling, this will ignore the upstream's http code.
+- config.dev_mode: default: true, this will disable sandbox function cache.
 
 ## For Developer
 
