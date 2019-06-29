@@ -64,15 +64,20 @@ local _G_ENV = {
 }
 
 
-function _M.run_untrusted_file(lua_file, local_env)
+function _M.sandbox_load(lua_file, local_env)
   local f, message = loadfile(lua_file)
   if not f then
-    return nil, message
+    return false, message
   end
   for k,v in pairs(_G_ENV) do
     local_env[k] = v
   end
   setfenv(f, local_env)
+  return true, f
+end
+
+
+function _M.sandbox_exec(f)
   return xpcall(f, function() ngx.log(ngx.ERR, debug.traceback()) end)
 end
 

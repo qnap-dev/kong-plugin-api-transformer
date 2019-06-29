@@ -1,9 +1,16 @@
 local BasePlugin = require("kong.plugins.base_plugin")
 local MyPlugin = BasePlugin:extend()
+local _lrucache = require("resty.lrucache")
 local _inspect_ = require("inspect")
 local _utils = require("kong.plugins.api-transformer.utils")
 local _cjson_decode_ = require("cjson").decode
 local _cjson_encode_ = require("cjson").encode
+
+
+local C1, err = _lrucache.new(50)
+if not C1 then
+    return error("failed to create the cache: " .. (err or "unknown"))
+end
 
 
 local _get_env_ = function()
@@ -51,7 +58,29 @@ function MyPlugin:access(config)
   ngx.ctx.req_method = ngx.req.get_method()
   ngx.ctx.req_json_body = _req_json_body
 
-  local p_status, f_status, req_body_or_err  = _utils.run_untrusted_file(config.request_transformer, _get_env_())
+  ngx.log(ngx.ERR, "got config", _inspect_(config))
+
+  if config.dev_mode then
+    C1:flush_all()
+  end
+
+  local current_route_id = kong.router.get_route().id
+  local c1_key = current_route_id .. "access"
+  local sandbox_f = C1:get(c1_key)
+
+  ngx.log(ngx.ERR, "got sandbox_f", _inspect_(sandbox_f))
+
+  if not sandbox_f  then
+    local l_status
+    l_status, sandbox_f  = _utils.sandbox_load(config.request_transformer, _get_env_())
+    if not l_status then
+      ngx.ctx._parsing_error = true
+      return kong.response.exit(500, sandbox_f)
+    end
+    C1:set(c1_key, sandbox_f, 300)
+  end
+
+  local p_status, f_status, req_body_or_err  = _utils.sandbox_exec(sandbox_f)
 
   if not p_status then
     ngx.ctx._parsing_error = true
@@ -109,8 +138,20 @@ function MyPlugin:body_filter(config)
 
     ngx.ctx.resp_json_body = _cjson_decode_(raw_body)
 
+    local current_route_id = kong.router.get_route().id
+    local c1_key = current_route_id .. "body"
+    local sandbox_f = C1:get(c1_key)
+    if not sandbox_f then
+      local l_status
+      l_status, sandbox_f  = _utils.sandbox_load(config.response_transformer, _get_env_())
+      if not l_status then
+        ngx.ctx._parsing_error = true
+        return kong.response.exit(500, sandbox_f)
+      end
+      C1:set(c1_key, sandbox_f, 300)
+    end
 
-    local p_status, f_status, resp_body_or_err = _utils.run_untrusted_file(config.response_transformer, _get_env_())
+    local p_status, f_status, resp_body_or_err  = _utils.sandbox_exec(sandbox_f)
 
     local resp_body = {
       data = {},
