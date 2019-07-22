@@ -53,7 +53,7 @@ function MyPlugin:access(config)
   end
 
   -- save vars into context for later usage
-  ngx.ctx._parsing_error = false
+  ngx.ctx._parsing_error_in_access_phase = false
   ngx.ctx.req_uri = ngx.var.uri
   ngx.ctx.req_method = ngx.req.get_method()
   ngx.ctx.req_json_body = _req_json_body
@@ -70,7 +70,7 @@ function MyPlugin:access(config)
     local l_status
     l_status, sandbox_f  = _utils.sandbox_load(config.request_transformer, _get_env_())
     if not l_status then
-      ngx.ctx._parsing_error = true
+      ngx.ctx._parsing_error_in_access_phase = true
       return kong.response.exit(500, sandbox_f)
     end
     C1:set(c1_key, sandbox_f, 300)
@@ -79,17 +79,17 @@ function MyPlugin:access(config)
   local p_status, f_status, req_body_or_err  = _utils.sandbox_exec(sandbox_f)
 
   if not p_status then
-    ngx.ctx._parsing_error = true
+    ngx.ctx._parsing_error_in_access_phase = true
     return kong.response.exit(500, "transformer script parsing failure.")
   end
 
   if not f_status then
-    ngx.ctx._parsing_error = true
+    ngx.ctx._parsing_error_in_access_phase = true
     return kong.response.exit(500, req_body_or_err)
   end
 
   if type(req_body_or_err) ~= "string" then
-    ngx.ctx._parsing_error = true
+    ngx.ctx._parsing_error_in_access_phase = true
     return kong.response.exit(500, "unknown error")
   end
 
@@ -103,11 +103,11 @@ end
 
 
 function MyPlugin:header_filter(config)
-  ngx.header["content-length"] = nil -- this needs to be for the content-length to be recalculated
-
-  if ngx.ctx._parsing_error then
+  MyPlugin.super.header_filter(self)
+  if ngx.ctx._parsing_error_in_access_phase then
     return
   end
+  ngx.header["content-length"] = nil -- this needs to be for the content-length to be recalculated
   if config.http_200_always then
     ngx.status = 200
   end
@@ -116,6 +116,9 @@ end
 
 function MyPlugin:body_filter(config)
   MyPlugin.super.body_filter(self)
+  if ngx.ctx._parsing_error_in_access_phase then
+    return
+  end
 
   local chunk, eof = ngx.arg[1], ngx.arg[2]
 
@@ -141,7 +144,7 @@ function MyPlugin:body_filter(config)
       local l_status
       l_status, sandbox_f  = _utils.sandbox_load(config.response_transformer, _get_env_())
       if not l_status then
-        ngx.ctx._parsing_error = true
+        ngx.ctx._parsing_error_in_access_phase = true
         return kong.response.exit(500, sandbox_f)
       end
       C1:set(c1_key, sandbox_f, 300)
