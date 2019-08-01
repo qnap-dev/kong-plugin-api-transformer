@@ -45,18 +45,18 @@ function MyPlugin:access(config)
 
   ngx.req.read_body()
 
-  local _req_body = ngx.req.get_body_data()
-
-  local s, _req_json_body = pcall(function() return _cjson_decode_(_req_body) end)
+  local s, req_json_body = pcall(function() return _cjson_decode_(ngx.req.get_body_data()) end)
   if not s then
-    _req_json_body = nil
+    req_json_body = nil
   end
 
   -- save vars into context for later usage
   ngx.ctx._parsing_error_in_access_phase = false
   ngx.ctx.req_uri = ngx.var.uri
+  ngx.ctx.req_headers = ngx.req.get_headers()
+  ngx.ctx.req_uri_args = ngx.req.get_uri_args()
   ngx.ctx.req_method = ngx.req.get_method()
-  ngx.ctx.req_json_body = _req_json_body
+  ngx.ctx.req_json_body = req_json_body
 
   if config.dev_mode then
     C1:flush_all()
@@ -80,17 +80,17 @@ function MyPlugin:access(config)
 
   if not p_status then
     ngx.ctx._parsing_error_in_access_phase = true
-    return kong.response.exit(500, "transformer script parsing failure.")
+    return kong.response.exit(500, _, {["Warning"] = '199 qtsapi-transformer "'.. "transformer script parsing failure." .. '"'})
   end
 
   if not f_status then
     ngx.ctx._parsing_error_in_access_phase = true
-    return kong.response.exit(500, req_body_or_err)
+    return kong.response.exit(500, _, {["Warning"] = '199 qtsapi-transformer "'.. req_body_or_err .. '"'})
   end
 
   if type(req_body_or_err) ~= "string" then
     ngx.ctx._parsing_error_in_access_phase = true
-    return kong.response.exit(500, "unknown error")
+    return kong.response.exit(500, _, {["Warning"] = '199 qtsapi-transformer "'.. "unknown error" .. '"'})
   end
 
   if string.len(req_body_or_err) > 0 then
@@ -117,6 +117,7 @@ end
 function MyPlugin:body_filter(config)
   MyPlugin.super.body_filter(self)
   if ngx.ctx._parsing_error_in_access_phase then
+    ngx.arg[1] = ""
     return
   end
 
@@ -163,6 +164,7 @@ function MyPlugin:body_filter(config)
         resp_body.error.message = "transformer script parsing failure."
         ngx.arg[1] = _cjson_encode_(resp_body)
       else
+        ngx.arg[1] = ""
         return kong.response.exit(500, "transformer script parsing failure.")
       end
     elseif not f_status then
@@ -171,6 +173,7 @@ function MyPlugin:body_filter(config)
         resp_body.error.message = resp_body_or_err
         ngx.arg[1] = _cjson_encode_(resp_body)
       else
+        ngx.arg[1] = ""
         return kong.response.exit(500, resp_body_or_err)
       end
     else
